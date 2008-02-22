@@ -1,0 +1,41 @@
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>fn Test</title>
+    <meta name="author" content="Nick Kallen">
+    <script src="jspec.js"></script>
+    <script src="jquery-1.2.3.js"></script>
+    <script src="jquery.fn.js"></script>
+    <script>
+      $(document).ready(function() {  
+        jspec.describe("fn", function() {
+          it("registers a function with a name on the object which can be invoked", function() {
+            var element = $("<div></div>");
+            element.fn('name', function() { return "function invoked" });
+            element.fn('name').should("==", "function invoked");
+          });
+          it("invokes functions of any arity", function() {
+            var element = $("<div></div>");
+            element.fn('name', function(a, b, c) { return [a, b, c] });
+            element.fn('name', 1, 2, 3).should("==", [1, 2, 3]);
+          });
+          it("registers many functions when provided a hash", function() {
+            var element = $("<div></div>");
+            element.fn({
+              name1: function() { return 'name1' },
+              name2: function() { return 'name2' }
+            });
+            element.fn('name1').should("==", 'name1');
+            element.fn('name2').should("==", 'name2');
+          });
+        });
+      });
+    </script>
+  </head>
+    <style type="text/css">
+      div#wrapper { display: none ;}
+    </style>
+  <body>
+    <div id="wrapper"><div id="hello">Hello</div></div>
+  </body>
+</html>
