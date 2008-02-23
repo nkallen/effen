@@ -108,3 +108,26 @@ jspec.compress_lines = function(obj) {
       return "Expected " + (not ? "not " : "") + "to exist, but was " + jspec.compress_lines(this);
     }
   }
+
+  jspec.matchers["eq"] = {
+    describe: function(target, not) {
+      return jspec.compress_lines(this) + " should " + (not ? "not " : "") + "equal " + jspec.compress_lines(target)
+    },
+    matches: function(target) {
+      if (this instanceof Array) {
+        if (this.length != target.length)
+          return false;
+        for (i=0; i<this.length; i++) {
+          if (this[i] != target[i])
+            return false;
+        }
+        return true;
+      }
+    },
+    failure_message: function(target, not) {
+      if (not)
+	return "Expected " + jspec.compress_lines(this) + " not to equal " + jspec.compress_lines(target);
+      else
+	return "Expected " + jspec.compress_lines(this) + ". Got " + jspec.compress_lines(target);
+    }
+  }

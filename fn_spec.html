@@ -9,24 +9,24 @@
     <script>
       $(document).ready(function() {  
         jspec.describe("fn", function() {
-          it("registers a function with a name on the object which can be invoked", function() {
+          it("registers and applies a function bound to a name", function() {
             var element = $("<div></div>");
-            element.fn('name', function() { return "function invoked" });
+            element.fn({ name: function() { return "function invoked" } });
             element.fn('name').should("==", "function invoked");
           });
-          it("invokes functions of any arity", function() {
+          it("registers and applies a function of any arity", function() {
             var element = $("<div></div>");
-            element.fn('name', function(a, b, c) { return [a, b, c] });
-            element.fn('name', 1, 2, 3).should("==", [1, 2, 3]);
+            element.fn({ name: function(a, b, c) { return [a, b, c] } });
+            element.fn('name', 1, 2, 3).should("eq", [1, 2, 3]);
           });
-          it("registers many functions when provided a hash", function() {
+          it("registers many functions", function() {
             var element = $("<div></div>");
             element.fn({
-              name1: function() { return 'name1' },
-              name2: function() { return 'name2' }
+              name1: function() { return 1 },
+              name2: function() { return 2 }
             });
-            element.fn('name1').should("==", 'name1');
-            element.fn('name2').should("==", 'name2');
+            element.fn('name1').should("==", 1);
+            element.fn('name2').should("==", 2);
           });
         });
       });
