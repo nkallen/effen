@@ -1,4 +1,4 @@
-## Effen ##
+# Effen #
 
 *Effen* is a jQuery plugin that supports Concrete Javascript. Concrete Javascript is a pattern in which the state and behavior of your domain are attached directly to DOM elements. This differs from MVC, where domain behavior is isolated from the view. Concrete Javascript is draws inspiration from Self's Morphic UI framework.
 
@@ -24,7 +24,7 @@ That's all there is to it. But there are some subtle details to bear in mind:
     $('div').fn({ foo: function() {} });
     $('div.special').fn({ foo: function() {} });
     
-The latter takes precedence because it appears last--NOT because the selector is more specific. This may be changed in future releases.
+ The latter takes precedence because it appears last--NOT because the selector is more specific. This may be changed in future releases.
 
 ## An in-depth example of Concrete Programming ##
 
@@ -48,7 +48,7 @@ Suppose we have the following HTML code, representing a Script that has many Sce
       </ol>
     </div>
 
-### Let's start with some simple CRUD operations. To "create" a scene, we POST to the url: ###
+### Let's start with some simple CRUD operations. To *create* a scene, we POST to the url: ###
 
     $('.scenes').fn({
       create: function() {
@@ -88,15 +88,12 @@ We'd also like to bind the &lt;Backspace&gt; key from within the Dialog characte
           $.delete($(this).attr('url'), $(this).remove);
       },
       isBlank: function() {
-        return $(this).fn('character').fn('isBlank') && $(this).fn('text').fn('isBlank');
+        return $(this).find('input[@name=character]').val() == "" &&
+               $(this).find('input[@name=text]').val() == "";
       },
     });
     
-Using the technique shown in the previous section, the character input is given a reference to the dialog, and the dialog a reference to the character and text (omitted here). `isBlank` is defined on character and text thusly:
-
-    $('*:input').fn({
-      isBlank: function() { return $(this).val() == '' }
-    });
+Using the technique shown in the previous section, the character input is given a reference to the dialog (omitted here).
 
 ### Polymorphism in Concrete Javascript ###
 
@@ -121,3 +118,5 @@ At this point, we may notice that the definition of delete is the same for Scene
           $.delete($(this).attr('url'), $(this).remove);
       }
     });
+
+So now we have achieved a kind of polymorphism: Both Scenes and Dialogs respond to `isBlank`, though each have differing implementations. Each has a different `url` attribute and each (given that they are DOM objects) can be `removed`. Given that they conform to the same interface, we can implement a generic `delete` method for both of them.
