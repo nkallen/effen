@@ -1,0 +1,123 @@
+## Effen ##
+
+*Effen* is a jQuery plugin that supports Concrete Javascript. Concrete Javascript is a pattern in which the state and behavior of your domain are attached directly to DOM elements. This differs from MVC, where domain behavior is isolated from the view. Concrete Javascript is draws inspiration from Self's Morphic UI framework.
+
+## Use ##
+
+To attach behaviors (methods) to DOM nodes, pass a hash to the `fn` function:
+
+    $('div').fn({
+      method1: function(...) {...},
+      method2: function(...) {...}
+    })
+    
+To invoke a method, pass a string naming the method and any arguments to the `fn` function:
+
+    $('div').fn('method1', some, arguments, here);
+    
+That's all there is to it. But there are some subtle details to bear in mind:
+
+* While `$('div').fn({...})` will bind the behavior to all divs, calling `$('div').fn('foo')` will only invoke `foo` on the first `div`. This may be changed in future releases.
+
+* Binding is order-dependent. So, for example, to provide specialized behavior:
+
+    $('div').fn({ foo: function() {} });
+    $('div.special').fn({ foo: function() {} });
+    
+The latter takes precedence because it appears last--NOT because the selector is more specific. This may be changed in future releases.
+
+## An in-depth example of Concrete Programming ##
+
+Suppose we have the following HTML code, representing a Script that has many Scenes. A Scene has a Video description and many lines of Dialog.
+
+    <div class="script" url="/scripts/1">
+      <ol class="scenes" url="/scripts/1/scenes">
+        <li class="scene" url="/scripts/1/scenes/1">
+          <textarea name="video">Interior of Pivotal Labs, Day.</textarea>
+          <ol class="dialogs" url="/scripts/1/scenes/1/dialogs">
+            <li class="dialog" url="/scripts/1/scenes/1/dialogs/1">
+              <input type="text" name="character" value="Nick" />
+              <input type="text" name="text" value="I like Concrete Programming" />
+            </li>
+            <li class="dialog" url="/scripts/1/scenes/1/dialogs/2">
+              <input type="text" name="character" value="Nathan" />
+              <input type="text" name="text" value="Me too" />
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </div>
+
+### Let's start with some simple CRUD operations. To "create" a scene, we POST to the url: ###
+
+    $('.scenes').fn({
+      create: function() {
+        $.post($(this).attr('url'), ...);
+      }
+    });
+
+We'd like to also create a scene any time someone hits &lt;Ctrl+Enter&gt; within the video textarea.
+
+    $('.scene textarea.video').bind('keypress[ctrl+enter]', function() {
+      ...
+    });
+
+In order to invoke the `create` function on the scene containing the textarea, we'll need a reference from the textarea to the scene:
+
+    $('.scene').each(function(i, scene) {
+      $(scene).find('*').fn('scene', $(this));
+    });
+
+Now, binding <Ctrl+Enter> on the textarea to invoke create is as simple as:
+
+    $('.scenes textarea.video').bind('keypress[ctrl+enter]', function() {
+      $(this).fn('scenes').fn('create');
+    });
+
+### Let's perform a Delete now ###
+
+We'd also like to bind the &lt;Backspace&gt; key from within the Dialog character to delete Dialog elements if both the character and text are blank. In other words:
+  
+    $('.dialog input[@name=character]').bind('keypress[backspace]', function() {
+      $(this).fn('dialog').fn('delete');
+    });
+    
+    $('.dialog').fn({
+      delete: function() {
+        if ($(this).fn('isBlank'))
+          $.delete($(this).attr('url'), $(this).remove);
+      },
+      isBlank: function() {
+        return $(this).fn('character').fn('isBlank') && $(this).fn('text').fn('isBlank');
+      },
+    });
+    
+Using the technique shown in the previous section, the character input is given a reference to the dialog, and the dialog a reference to the character and text (omitted here). `isBlank` is defined on character and text thusly:
+
+    $('*:input').fn({
+      isBlank: function() { return $(this).val() == '' }
+    });
+
+### Polymorphism in Concrete Javascript ###
+
+We'd like to add a similar delete feature to Scenes. When the user hits &lt;Backspace&gt; while in the Video textarea it should delete the Scene--but only if the Video is blank and so are *each* of the Dialog elements within the Scene.
+
+First, let's define `isBlank` on Scene:
+
+    $('.scene').fn({
+      isBlank: function() {
+        return $(this).fn('video').fn('isBlank') &&
+               $.all($(this).find('.dialog'), function(dialog) {
+                 return $(dialog).fn('isBlank')
+               })
+      }
+    });
+    
+At this point, we may notice that the definition of delete is the same for Scene as for Dialog. Thus,
+
+    $('.scene, .dialog').fn({
+      delete: function() {
+        if ($(this).fn('isBlank'))
+          $.delete($(this).attr('url'), $(this).remove);
+      }
+    });
