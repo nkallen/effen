@@ -14,12 +14,16 @@
 	function define(self, name, fn) {
     self.data(namespacedName(name), fn);
   };
-  function apply(self, name, arguments) {
-    var fn = self.data(namespacedName(name));
-		if (fn)
-    	return fn.apply(self, arguments);
-		else
-		  throw(name + " is not defined");
+  function apply(self, name, args) {
+    var result;
+    self.each(function(i, item) {
+      var fn = $(item).data(namespacedName(name));
+      if (fn)
+        result = fn.apply(item, args);
+      else
+        throw(name + " is not defined");
+    });
+    return result;
   };
   function namespacedName(name) {
     return 'fn.' + name;

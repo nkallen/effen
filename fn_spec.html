@@ -28,6 +28,13 @@
             element.fn('name1').should("==", 1);
             element.fn('name2').should("==", 2);
           });
+          it("applies bound functions to each item in a collection", function() {
+            var elements = $("<div></div>").add($("<div></div>"));
+            var i = 0;
+            elements.fn({ call: function() { i++ } });
+            elements.fn('call');
+            i.should("==", 2);
+          });
         });
       });
     </script>
